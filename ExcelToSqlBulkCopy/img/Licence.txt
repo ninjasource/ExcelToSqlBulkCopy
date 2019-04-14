@@ -1,0 +1,4 @@
+﻿The following image resources in the public domain:
+app.ico
+form.png
+splash.png

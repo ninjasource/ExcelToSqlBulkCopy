@@ -100,12 +100,13 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="img\Licence.txt" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="img\app.ico" />
     <Resource Include="img\form.png" />
     <SplashScreen Include="img\splash.png" />
   </ItemGroup>

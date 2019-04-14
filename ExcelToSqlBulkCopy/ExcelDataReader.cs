@@ -79,7 +79,11 @@ namespace ExcelToSqlBulkCopy
                 _currentRow = new object[_columnNames.Length];
                 foreach (var cell in row)
                 {
-                    _currentRow[cell.Start.Column - 1] = cell.Value;
+                    int colIndex = cell.Start.Column - 1;
+                    if (colIndex < _currentRow.Length)
+                    {
+                        _currentRow[cell.Start.Column - 1] = cell.Value;
+                    }
                 }
 
                 _rowIndex++;
