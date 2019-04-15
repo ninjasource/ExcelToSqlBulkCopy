@@ -35,8 +35,7 @@ namespace ExcelToSqlBulkCopy
         {
             _excelFileName = Settings.Default.ExcelFileName;
             _excelSheetName = Settings.Default.ExcelSheet;
-            _destinationTableName = Settings.Default.DestinationTableName;
-
+            
             var list = new List<string>();
             if (Settings.Default.ExcelSheetList != null)
             {
@@ -63,7 +62,12 @@ namespace ExcelToSqlBulkCopy
                 {
                     destinationConnection.Open();
                     var tableNames = GetTableNames(destinationConnection);
-                    _uiThread.Invoke(new Action(() => TableNames = tableNames));
+                    _uiThread.Invoke(new Action(() =>
+                    {
+                        TableNames = tableNames;
+                        DestinationTableName = Settings.Default.DestinationTableName;
+                    }
+                    ));
                 }
 
                 Log += "Complete.";
