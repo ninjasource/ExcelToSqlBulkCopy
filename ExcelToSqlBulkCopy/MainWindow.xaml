@@ -28,11 +28,11 @@
         </Grid>
         <Grid Grid.Row="1" Margin="0,5,0,0" HorizontalAlignment="Left">
             <TextBlock Text="Worksheet" VerticalAlignment="Center" />
-            <ComboBox ItemsSource="{Binding ExcelSheetList}" SelectedItem="{Binding ExcelSheet}" Width="200" Margin="75,0,0,0" IsEnabled="{Binding IsEnabled}"/>
+            <ComboBox ItemsSource="{Binding ExcelSheetList}" SelectedItem="{Binding ExcelSheet}" Width="300" Margin="75,0,0,0" IsEnabled="{Binding IsEnabled}"/>
         </Grid>
         <Grid Grid.Row="2" Margin="0,5,0,0" HorizontalAlignment="Left">
             <TextBlock Text="Table Name" VerticalAlignment="Center" />
-            <TextBox Text="{Binding DestinationTableName}" Width="200" Margin="75,0,0,0" IsEnabled="{Binding IsEnabled}"/>
+            <ComboBox ItemsSource="{Binding TableNames}" SelectedItem="{Binding DestinationTableName}" Width="300" Margin="75,0,0,0" IsEnabled="{Binding IsEnabled}"/>
         </Grid>
         <ProgressBar Value="{Binding ProgressbarValue}" Maximum="{Binding ProgressbarMaximum}" Height="20" Margin="0,5,0,0" Grid.Row="3"/>
         <TextBox Text="{Binding Log, Mode=OneWay}" BorderThickness="0" IsReadOnly="True" Grid.Row="4" Margin="0,5,0,0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" />

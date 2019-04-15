@@ -9,7 +9,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace ExcelToSqlBulkCopy
 {
@@ -23,6 +25,8 @@ namespace ExcelToSqlBulkCopy
         private bool _isEnabled;
         private string _destinationTableName;
         private string[] _excelSheetList;
+        private string[] _tableNames;
+        private Dispatcher _uiThread;
 
         public ICommand OpenExcelFileCommand => new RelayCommand(OpenExcelFile);
         public ICommand StartCommand => new RelayCommand(Start);
@@ -42,8 +46,46 @@ namespace ExcelToSqlBulkCopy
                 }
             }
             _excelSheetList = list.ToArray();
-                    
+
             _isEnabled = true;
+            _uiThread = Dispatcher.CurrentDispatcher;
+            var del = new Action(LoadTableNameList);
+            del.BeginInvoke(null, null);
+        }
+
+        private void LoadTableNameList()
+        {
+            IsEnabled = false;
+            Log = "Loading table name list. ";
+            try
+            {
+                using (SqlConnection destinationConnection = new SqlConnection(Settings.Default.SqlConnectionString))
+                {
+                    destinationConnection.Open();
+                    var tableNames = GetTableNames(destinationConnection);
+                    _uiThread.Invoke(new Action(() => TableNames = tableNames));
+                }
+
+                Log += "Complete.";
+            }
+            catch (Exception ex)
+            {
+                Log = "Error loading table names: " + ex.ToString();
+            }
+            finally
+            {
+                IsEnabled = true;
+            }
+        }
+
+        public string[] TableNames
+        {
+            get => _tableNames;
+            set
+            {
+                _tableNames = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableNames)));
+            }
         }
 
         public string[] ExcelSheetList
@@ -166,7 +208,18 @@ namespace ExcelToSqlBulkCopy
             {
                 ExcelFileName = dialog.FileName;
                 ExcelSheetList = GetWorksheetNames(ExcelFileName);
-                ExcelSheet = ExcelSheetList.FirstOrDefault();               
+                ExcelSheet = ExcelSheetList.FirstOrDefault();
+            }
+        }
+
+        private string[] GetTableNames(SqlConnection connection)
+        {
+            using (SqlCommand cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "SELECT TABLE_SCHEMA + '.' + TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME";
+                cmd.CommandType = CommandType.Text;
+                var reader = cmd.ExecuteReader();
+                return GetColumnmNamesFromDataReader(reader);
             }
         }
 
