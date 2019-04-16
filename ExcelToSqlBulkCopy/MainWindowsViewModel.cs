@@ -284,7 +284,7 @@ namespace ExcelToSqlBulkCopy
                 param = cmd.Parameters.Add("@FromTableName", SqlDbType.NVarChar, 40);
                 param.Value = tableName;
                 param = cmd.Parameters.Add("@NewTableName", SqlDbType.NVarChar, 40);
-                param.Value = tableName + DateTime.Now.ToString("dd_mm_yy_hhmmss");
+                param.Value = tableName + DateTime.Now.ToString("dd_MM_yy_hhmmss");
 
 
                 //cmd.CreateParameter("@FromTableName", adVarChar, adParamInput, 40, strFromTableName);
@@ -320,6 +320,11 @@ namespace ExcelToSqlBulkCopy
                     excelPackage.Load(stream);
                     string[] list = excelPackage.Workbook.Worksheets.Select(x => x.Name).ToArray();
                     Log = "Opening excel file. Success.";
+                    Log += Environment.NewLine + Environment.NewLine + "Before loading any data from Excel, "
+                    + Environment.NewLine + "Please ensure that the original column names are in the top row"
+                    + Environment.NewLine + "and all blank rows have been removed."
+                    + Environment.NewLine + "Customer/Supplier data : please remove any rows that do not have a Transaction Number. "
+                    + Environment.NewLine + "NRS data : please ensure that there are no duplicate Transaction numbers. ";
                     return list;
                 }
             }
@@ -376,6 +381,7 @@ namespace ExcelToSqlBulkCopy
 
                             //AW Test calling procedure to backup table
                             _backuptable = CallBackupTable(destinationConnection, DestinationTableName);
+                            Log = DestinationTableName + " backed up successfully";
 
                             destinationConnection.Open();
                             Log = "Bulk copying data";
@@ -383,7 +389,7 @@ namespace ExcelToSqlBulkCopy
                             {
                                 bulkCopy.DestinationTableName = destinationTableName;
                                 bulkCopy.BatchSize = 500; // number of rows to copy in a batch
-                                bulkCopy.BulkCopyTimeout = (int)(TimeSpan.FromMinutes(60).TotalSeconds); // 1 hour timeout
+                                bulkCopy.BulkCopyTimeout = (int)(TimeSpan.FromMinutes(90).TotalSeconds); // 1 hour timeout
 
                                 // add mapping where the column names match exactly
                                 foreach (string columnName in excelColumnNames.Intersect(sqlColumnNames))
