@@ -3,7 +3,9 @@
   <Profiles />
   <Settings>
     <Setting Name="SqlConnectionString" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Server=localhost;Database=TestBulkCopy;Trusted_Connection=True;</Value>
+      <!--<Value Profile="(Default)">Server=localhost;Database=TestBulkCopy;Trusted_Connection=True;</Value>-->
+      <!--AW Updated-->
+      <Value Profile="(Default)">Server=tcp:ssgfinanceserver.database.windows.net,1433;Initial Catalog=SsgFinanceReporterDatabase;Persist Security Info=False;User ID=Accounting;Password=SSG1z2019*;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;</Value>
     </Setting>
     <Setting Name="ExcelFileName" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -19,3 +21,4 @@
     </Setting>
   </Settings>
 </SettingsFile>
+

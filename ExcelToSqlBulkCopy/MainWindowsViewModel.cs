@@ -27,6 +27,7 @@ namespace ExcelToSqlBulkCopy
         private string[] _excelSheetList;
         private string[] _tableNames;
         private Dispatcher _uiThread;
+        private string _backuptable;
 
         public ICommand OpenExcelFileCommand => new RelayCommand(OpenExcelFile);
         public ICommand StartCommand => new RelayCommand(Start);
@@ -71,6 +72,11 @@ namespace ExcelToSqlBulkCopy
                 }
 
                 Log += "Complete.";
+                Log += Environment.NewLine + Environment.NewLine + "Before loading any data from Excel, " 
+                    + Environment.NewLine + "Please ensure that the original column names are in the top row"
+                    + Environment.NewLine + "and all blank rows have been removed."
+                    + Environment.NewLine +"Customer/Supplier data : please remove any rows that do not have a Transaction Number. " 
+                    + Environment.NewLine + "NRS data : please ensure that there are no duplicate Transaction numbers. ";
             }
             catch (Exception ex)
             {
@@ -216,15 +222,39 @@ namespace ExcelToSqlBulkCopy
             }
         }
 
+
+
+
+
+
         private string[] GetTableNames(SqlConnection connection)
         {
-            using (SqlCommand cmd = connection.CreateCommand())
-            {
-                cmd.CommandText = "SELECT TABLE_SCHEMA + '.' + TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME";
-                cmd.CommandType = CommandType.Text;
-                var reader = cmd.ExecuteReader();
-                return GetColumnmNamesFromDataReader(reader);
-            }
+
+            //AW Added hard code list to test
+            List<string> GetTableNamesList = new List<string>();
+
+            //Add items
+            GetTableNamesList.Add("NominalUpload");
+            GetTableNamesList.Add("VSL_NominalUpload");
+            GetTableNamesList.Add("SupplierUpload_SSG");
+            GetTableNamesList.Add("CustomerUpload_SSG");
+            GetTableNamesList.Add("NRS_Upload");
+            GetTableNamesList.Add("BudgetUpload");
+            GetTableNamesList.Add("NRS_UploadTest");
+            GetTableNamesList.Add("NominalUploadTest");
+            
+            //GetTableNamesList.Add("NominalUploadTest");
+
+            var myArray = GetTableNamesList.ToArray();
+            return myArray;
+
+            //using (SqlCommand cmd = connection.CreateCommand())
+            //{
+            //    cmd.CommandText = "SELECT TABLE_SCHEMA + '.' + TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME";
+            //    cmd.CommandType = CommandType.Text;
+            //    var reader = cmd.ExecuteReader();
+            //    return GetColumnmNamesFromDataReader(reader);
+            //}
         }
 
         private string[] GetSqlColumnNames(SqlConnection connection, string tableName)
@@ -236,6 +266,35 @@ namespace ExcelToSqlBulkCopy
                 cmd.CommandType = CommandType.Text;
                 var reader = cmd.ExecuteReader();
                 return GetColumnmNamesFromDataReader(reader);
+            }
+        }
+
+        //AW Added to backup table before appending
+ 
+        private string CallBackupTable (SqlConnection connection, string tableName)
+        {
+            using (SqlCommand cmd = connection.CreateCommand())
+            {
+                // the ; replacement is a rudimentary way to avoid a sql injection attack
+                //cmd.CommandText = "[dbo].[uspCopyNominal]";
+                cmd.CommandText = "[dbo].[uspCopyNominal]";
+                cmd.CommandType = CommandType.StoredProcedure;
+                //cmd.CreateParameter("@FromTableName", adVarChar, adParamInput, 40, strFromTableName);
+                SqlParameter param;
+                param = cmd.Parameters.Add("@FromTableName", SqlDbType.NVarChar, 40);
+                param.Value = tableName;
+                param = cmd.Parameters.Add("@NewTableName", SqlDbType.NVarChar, 40);
+                param.Value = tableName + DateTime.Now.ToString("dd_mm_yy_hhmmss");
+
+
+                //cmd.CreateParameter("@FromTableName", adVarChar, adParamInput, 40, strFromTableName);
+                //cmd.Parameters.Add("@NewTableName", SqlDbType.NVarChar, 40, "NRS_Upload_bktest");
+                //cmd.Parameters.Add("@FromTableName", SqlDbType.NVarChar, 40, tableName);
+                connection.Open();
+                var reader = cmd.ExecuteReader();
+                connection.Close();
+                return "Backup Complete";
+                
             }
         }
 
@@ -313,6 +372,11 @@ namespace ExcelToSqlBulkCopy
                         // this needs to be a new sql connection for some reason
                         using (SqlConnection destinationConnection = new SqlConnection(Settings.Default.SqlConnectionString))
                         {
+
+
+                            //AW Test calling procedure to backup table
+                            _backuptable = CallBackupTable(destinationConnection, DestinationTableName);
+
                             destinationConnection.Open();
                             Log = "Bulk copying data";
                             using (SqlBulkCopy bulkCopy = new SqlBulkCopy(destinationConnection))

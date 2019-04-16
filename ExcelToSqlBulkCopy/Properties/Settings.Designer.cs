@@ -25,7 +25,7 @@ namespace ExcelToSqlBulkCopy.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Server=localhost;Database=TestBulkCopy;Trusted_Connection=True;")]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"Server=tcp:ssgfinanceserver.database.windows.net,1433;Initial Catalog=SsgFinanceReporterDatabase;Persist Security Info=False;User ID=Accounting;Password=SSG1z2019*;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;")]
         public string SqlConnectionString {
             get {
                 return ((string)(this["SqlConnectionString"]));
